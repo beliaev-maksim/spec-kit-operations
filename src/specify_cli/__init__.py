@@ -668,61 +668,105 @@ def download_template_from_github(ai_assistant: str, download_dir: Path, *, scri
     }
     return zip_path, metadata
 
-def copy_local_template(project_path: Path, is_current_dir: bool = False, *, verbose: bool = True, tracker: StepTracker | None = None) -> Path:
+def copy_local_template(project_path: Path, ai_assistant: str, script_type: str, is_current_dir: bool = False, *, verbose: bool = True, tracker: StepTracker | None = None) -> Path:
     """Copy template files from local templates/ directory for development testing.
+    Creates proper .specify/ directory structure.
     Returns project_path.
     """
-    # Find the templates directory relative to this script
+    # Find the directories relative to this script
     script_dir = Path(__file__).parent.parent.parent  # Go up to repo root
     templates_dir = script_dir / "templates"
+    memory_dir = script_dir / "memory"
+    scripts_dir = script_dir / "scripts"
     
     if not templates_dir.exists():
         raise RuntimeError(f"Local templates directory not found at {templates_dir}")
     
     if tracker:
         tracker.add("local", "Copy local templates")
-        tracker.start("local", f"from {templates_dir.name}/")
+        tracker.start("local", f"building .specify/ structure")
     elif verbose:
         console.print(f"[cyan]Copying from local templates directory:[/cyan] {templates_dir}")
     
     try:
-        if is_current_dir:
-            # Merge into current directory
-            for item in templates_dir.iterdir():
-                if item.name in ['.git', '__pycache__', '.pytest_cache']:
-                    continue
-                    
-                dest_path = project_path / item.name
-                if item.is_dir():
-                    if dest_path.exists():
-                        # Merge directories
-                        for sub_item in item.rglob('*'):
-                            if sub_item.is_file():
-                                rel_path = sub_item.relative_to(item)
-                                dest_file = dest_path / rel_path
-                                dest_file.parent.mkdir(parents=True, exist_ok=True)
-                                
-                                # Special handling for .vscode/settings.json
-                                if dest_file.name == "settings.json" and dest_file.parent.name == ".vscode":
-                                    handle_vscode_settings(sub_item, dest_file, rel_path, verbose, tracker)
-                                else:
-                                    shutil.copy2(sub_item, dest_file)
-                    else:
-                        shutil.copytree(item, dest_path)
-                else:
-                    shutil.copy2(item, dest_path)
-        else:
-            # Copy to new directory
+        if not is_current_dir:
             project_path.mkdir(parents=True, exist_ok=True)
-            for item in templates_dir.iterdir():
-                if item.name in ['.git', '__pycache__', '.pytest_cache']:
-                    continue
-                    
-                dest = project_path / item.name
-                if item.is_dir():
-                    shutil.copytree(item, dest)
-                else:
-                    shutil.copy2(item, dest)
+        
+        # Create .specify directory structure
+        specify_dir = project_path / ".specify"
+        specify_dir.mkdir(exist_ok=True)
+        
+        # Copy templates to .specify/templates/
+        templates_dest = specify_dir / "templates"
+        templates_dest.mkdir(exist_ok=True)
+        for item in templates_dir.iterdir():
+            if item.name in ['.git', '__pycache__', '.pytest_cache']:
+                continue
+            dest = templates_dest / item.name
+            if item.is_dir():
+                if dest.exists():
+                    shutil.rmtree(dest)
+                shutil.copytree(item, dest)
+            else:
+                shutil.copy2(item, dest)
+        
+        # Copy memory files to .specify/memory/
+        if memory_dir.exists():
+            memory_dest = specify_dir / "memory"
+            if memory_dest.exists():
+                shutil.rmtree(memory_dest)
+            shutil.copytree(memory_dir, memory_dest)
+        
+        # Copy scripts to .specify/scripts/
+        if scripts_dir.exists():
+            scripts_dest = specify_dir / "scripts"
+            if scripts_dest.exists():
+                shutil.rmtree(scripts_dest)
+            shutil.copytree(scripts_dir, scripts_dest)
+        
+        # Copy or create agent-specific command files
+        agent_config = AGENT_CONFIG.get(ai_assistant)
+        if agent_config:
+            agent_folder = agent_config["folder"]
+            agent_dir = project_path / agent_folder
+            
+            # Determine command/workflow subdirectory based on agent
+            if ai_assistant == "copilot":
+                commands_dir = agent_dir / "prompts"
+            elif ai_assistant == "windsurf":
+                commands_dir = agent_dir / "workflows"
+            elif ai_assistant == "kilocode":
+                commands_dir = agent_dir / "rules"
+            elif ai_assistant == "auggie":
+                commands_dir = agent_dir / "rules"
+            elif ai_assistant == "roo":
+                commands_dir = agent_dir / "rules"
+            elif ai_assistant == "q":
+                commands_dir = agent_dir / "prompts"
+            elif ai_assistant == "amp":
+                commands_dir = agent_dir / "commands"
+            else:
+                commands_dir = agent_dir / "commands"
+            
+            commands_dir.mkdir(parents=True, exist_ok=True)
+            
+            # Copy command files from templates/commands/
+            commands_src = templates_dir / "commands"
+            if commands_src.exists():
+                for cmd_file in commands_src.glob("*.md"):
+                    shutil.copy2(cmd_file, commands_dir / cmd_file.name)
+        
+        # Copy .vscode settings if present
+        vscode_settings = templates_dir / "vscode-settings.json"
+        if vscode_settings.exists():
+            vscode_dir = project_path / ".vscode"
+            vscode_dir.mkdir(exist_ok=True)
+            dest_settings = vscode_dir / "settings.json"
+            
+            if dest_settings.exists():
+                handle_vscode_settings(vscode_settings, dest_settings, Path("settings.json"), verbose, tracker)
+            else:
+                shutil.copy2(vscode_settings, dest_settings)
         
         if tracker:
             tracker.complete("local", "copied")
@@ -754,7 +798,7 @@ def download_and_extract_template(project_path: Path, ai_assistant: str, script_
             tracker.skip("cleanup", "using local templates")
         elif verbose:
             console.print("[yellow]Local mode:[/yellow] Using templates from local directory")
-        return copy_local_template(project_path, is_current_dir, verbose=verbose, tracker=tracker)
+        return copy_local_template(project_path, ai_assistant, script_type, is_current_dir, verbose=verbose, tracker=tracker)
     
     current_dir = Path.cwd()
 

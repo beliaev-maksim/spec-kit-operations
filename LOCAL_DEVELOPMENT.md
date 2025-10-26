@@ -22,19 +22,43 @@ uv run specify init test-project --ai copilot
 The `--local` flag (or `SPECIFY_LOCAL_DEV=1` environment variable) tells `specify init` to:
 
 1. **Skip GitHub download**: No API calls to GitHub releases
-2. **Use local files**: Copy directly from `templates/` directory in your repo
-3. **Fast iteration**: Instant testing of template changes
+2. **Use local files**: Copy directly from your repo's `templates/`, `memory/`, and `scripts/` directories
+3. **Create proper structure**: Builds the full `.specify/` directory structure
+4. **Fast iteration**: Instant testing of template changes
+
+### Directory Structure Created
+
+```
+test-project/
+├── .specify/
+│   ├── templates/        # Your templates/ directory
+│   ├── memory/           # Your memory/ directory (organization-context.md, etc.)
+│   └── scripts/          # Your scripts/ directory (bash & PowerShell)
+├── .github/prompts/      # Copilot commands (or appropriate agent folder)
+└── .vscode/settings.json # VS Code settings
+```
+
+### Editing Organization Context
+
+After initializing with `--local`, you can edit the organization context:
+
+```bash
+# Edit the organization context file
+code test-project/.specify/memory/organization-context.md
+```
+
+This file is crucial for the spec-driven operations workflow and should be populated with your organization's actual information before using the planning commands.
 
 ### Important Notes
 
-**Current Limitation**: The `--local` mode copies files from the `templates/` directory, which contains raw template files. It does NOT create the full `.specify/` directory structure that the official releases have. This is sufficient for testing template content changes, but not for testing the full project structure.
+**Full Structure**: Unlike earlier versions, the `--local` mode now creates the complete `.specify/` directory structure, identical to what GitHub releases provide.
 
 **Recommended Workflow**:
 
-1. Make changes to template files in `templates/` directory
-2. Test with `uv run specify init --local`
-3. Verify template content changes work as expected
-4. For full structure testing, use a proper release or manually create the structure
+1. Make changes to files in `templates/`, `memory/`, or `scripts/` directories
+2. Test with `uv run specify init test-project --local`
+3. Verify all changes work as expected
+4. The project structure will be identical to production releases
 
 ### Examples
 
@@ -56,10 +80,11 @@ uv run specify init test3 --ai gemini
 
 - ✅ Testing changes to template markdown files
 - ✅ Testing command prompt changes
+- ✅ Testing memory files (organization-context.md, constitution.md)
+- ✅ Testing script changes
 - ✅ Quick iteration on content
-- ✅ Verifying template syntax
-- ❌ Testing full .specify/ directory structure
-- ❌ Testing release packaging
+- ✅ Verifying complete project structure
+- ✅ Full workflow testing without releases
 - ❌ Production use
 
 ### Production Use
