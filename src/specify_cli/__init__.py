@@ -668,10 +668,94 @@ def download_template_from_github(ai_assistant: str, download_dir: Path, *, scri
     }
     return zip_path, metadata
 
-def download_and_extract_template(project_path: Path, ai_assistant: str, script_type: str, is_current_dir: bool = False, *, verbose: bool = True, tracker: StepTracker | None = None, client: httpx.Client = None, debug: bool = False, github_token: str = None) -> Path:
+def copy_local_template(project_path: Path, is_current_dir: bool = False, *, verbose: bool = True, tracker: StepTracker | None = None) -> Path:
+    """Copy template files from local templates/ directory for development testing.
+    Returns project_path.
+    """
+    # Find the templates directory relative to this script
+    script_dir = Path(__file__).parent.parent.parent  # Go up to repo root
+    templates_dir = script_dir / "templates"
+    
+    if not templates_dir.exists():
+        raise RuntimeError(f"Local templates directory not found at {templates_dir}")
+    
+    if tracker:
+        tracker.add("local", "Copy local templates")
+        tracker.start("local", f"from {templates_dir.name}/")
+    elif verbose:
+        console.print(f"[cyan]Copying from local templates directory:[/cyan] {templates_dir}")
+    
+    try:
+        if is_current_dir:
+            # Merge into current directory
+            for item in templates_dir.iterdir():
+                if item.name in ['.git', '__pycache__', '.pytest_cache']:
+                    continue
+                    
+                dest_path = project_path / item.name
+                if item.is_dir():
+                    if dest_path.exists():
+                        # Merge directories
+                        for sub_item in item.rglob('*'):
+                            if sub_item.is_file():
+                                rel_path = sub_item.relative_to(item)
+                                dest_file = dest_path / rel_path
+                                dest_file.parent.mkdir(parents=True, exist_ok=True)
+                                
+                                # Special handling for .vscode/settings.json
+                                if dest_file.name == "settings.json" and dest_file.parent.name == ".vscode":
+                                    handle_vscode_settings(sub_item, dest_file, rel_path, verbose, tracker)
+                                else:
+                                    shutil.copy2(sub_item, dest_file)
+                    else:
+                        shutil.copytree(item, dest_path)
+                else:
+                    shutil.copy2(item, dest_path)
+        else:
+            # Copy to new directory
+            project_path.mkdir(parents=True, exist_ok=True)
+            for item in templates_dir.iterdir():
+                if item.name in ['.git', '__pycache__', '.pytest_cache']:
+                    continue
+                    
+                dest = project_path / item.name
+                if item.is_dir():
+                    shutil.copytree(item, dest)
+                else:
+                    shutil.copy2(item, dest)
+        
+        if tracker:
+            tracker.complete("local", "copied")
+        elif verbose:
+            console.print("[green]✓[/green] Local templates copied successfully")
+            
+    except Exception as e:
+        if tracker:
+            tracker.error("local", str(e))
+        else:
+            console.print(f"[red]Error copying local templates:[/red] {e}")
+        raise
+    
+    return project_path
+
+
+def download_and_extract_template(project_path: Path, ai_assistant: str, script_type: str, is_current_dir: bool = False, *, verbose: bool = True, tracker: StepTracker | None = None, client: httpx.Client = None, debug: bool = False, github_token: str = None, use_local: bool = False) -> Path:
     """Download the latest release and extract it to create a new project.
     Returns project_path. Uses tracker if provided (with keys: fetch, download, extract, cleanup)
+    
+    If use_local is True, uses local templates/ directory instead of downloading from GitHub.
     """
+    # Check for local development mode
+    if use_local or os.getenv("SPECIFY_LOCAL_DEV"):
+        if tracker:
+            tracker.skip("fetch", "using local templates")
+            tracker.skip("download", "using local templates")
+            tracker.skip("extract", "using local templates")
+            tracker.skip("cleanup", "using local templates")
+        elif verbose:
+            console.print("[yellow]Local mode:[/yellow] Using templates from local directory")
+        return copy_local_template(project_path, is_current_dir, verbose=verbose, tracker=tracker)
+    
     current_dir = Path.cwd()
 
     if tracker:
@@ -874,6 +958,7 @@ def init(
     skip_tls: bool = typer.Option(False, "--skip-tls", help="Skip SSL/TLS verification (not recommended)"),
     debug: bool = typer.Option(False, "--debug", help="Show verbose diagnostic output for network and extraction failures"),
     github_token: str = typer.Option(None, "--github-token", help="GitHub token to use for API requests (or set GH_TOKEN or GITHUB_TOKEN environment variable)"),
+    local: bool = typer.Option(False, "--local", help="Use local templates directory for development/testing (skips GitHub download)"),
 ):
     """
     Initialize a new Specify project from the latest template.
@@ -881,7 +966,7 @@ def init(
     This command will:
     1. Check that required tools are installed (git is optional)
     2. Let you choose your AI assistant
-    3. Download the appropriate template from GitHub
+    3. Download the appropriate template from GitHub (or use --local for development)
     4. Extract the template to a new project directory or current directory
     5. Initialize a fresh git repository (if not --no-git and no existing repo)
     6. Optionally set up AI assistant commands
@@ -897,7 +982,8 @@ def init(
         specify init --here --ai codex
         specify init --here --ai codebuddy
         specify init --here
-        specify init --here --force  # Skip confirmation when current directory not empty
+        specify init --here --force        # Skip confirmation when current directory not empty
+        specify init my-project --local    # Use local templates/ directory for testing
     """
 
     show_banner()
@@ -1044,7 +1130,7 @@ def init(
             local_ssl_context = ssl_context if verify else False
             local_client = httpx.Client(verify=local_ssl_context)
 
-            download_and_extract_template(project_path, selected_ai, selected_script, here, verbose=False, tracker=tracker, client=local_client, debug=debug, github_token=github_token)
+            download_and_extract_template(project_path, selected_ai, selected_script, here, verbose=False, tracker=tracker, client=local_client, debug=debug, github_token=github_token, use_local=local)
 
             ensure_executable_scripts(project_path, tracker=tracker)
 
