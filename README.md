@@ -134,12 +134,33 @@ Use the `/speckit.specify` command to describe your business initiative:
 /speckit.specify Design an employee onboarding process improvement initiative. Currently, new hires take 90 days to reach full productivity. We want to reduce this to 60 days by improving the first-week experience, providing better documentation, implementing a buddy system, and creating structured 30/60/90 day check-ins. Target: 100% of new hires complete orientation within first 3 days, 80% report feeling "well-prepared" in week-1 survey.
 ```
 
+**What happens**: 
+- Creates a new branch and initiative folder: `specs/1-employee-onboarding/`
+- Generates `specs/1-employee-onboarding/spec.md` with structured OKRs and business scenarios
+- All initiative files are organized in this folder (no more messy project root!)
+- **Note**: This is the brainstorming phase - only planning documents are created, no implementation artifacts
+
+The AI will generate `spec.md` with:
+
+### 6. Create Execution Plan
+
+Use the `/speckit.plan` command to design your execution strategy:
+
+```bash
 ### 6. Create Execution Plan
 
 Use the `/speckit.plan` command to design your execution strategy:
 
 ```bash
 /speckit.plan Focus on stakeholder engagement with HR, hiring managers, and new hires. Use surveys for baseline measurement. Communication plan should include manager training, new hire orientation materials, and feedback loops. Training needed for hiring managers on buddy system. Pilot with 2 departments before full rollout.
+```
+
+**What happens**:
+- All planning artifacts are created inside `specs/1-employee-onboarding/`
+- Generates stakeholder analysis, communication plan, execution guide, training materials outlines
+- **Note**: This is still the brainstorming/planning phase - creates markdown plans and outlines, NOT implementation files (no yaml, scripts, or data files)
+
+The AI generates:
 ```
 
 ### 7. Break Down into Tasks
@@ -150,6 +171,12 @@ Use `/speckit.tasks` to create an actionable task list:
 /speckit.tasks
 ```
 
+**What happens**:
+- Generates `specs/1-employee-onboarding/tasks.md` with JIRA-ready tasks
+- Each task includes: title, owner, estimate, description, acceptance criteria, deliverables, dependencies, business value
+- Tasks are organized by business scenario for independent execution
+- Ready to import into JIRA or your project management tool
+
 ### 8. Execute Initiative
 
 Use `/speckit.implement` to track execution of all tasks according to the plan:
@@ -157,6 +184,22 @@ Use `/speckit.implement` to track execution of all tasks according to the plan:
 ```bash
 /speckit.implement
 ```
+
+**What happens**:
+- NOW the AI creates actual implementation artifacts (surveys, scripts, training content, etc.)
+- Reads tasks from `specs/1-employee-onboarding/tasks.md`
+- Guides you through each task phase-by-phase
+- Creates deliverables specified in tasks (yaml files, csv templates, scripts, documents)
+- All implementation artifacts are saved in the initiative folder: `specs/1-employee-onboarding/`
+- Marks completed tasks as [X] in tasks.md
+- Tracks progress and alerts to risks
+
+**Phase Boundaries Summary**:
+- 📋 **Spec + Plan** (`/speckit.specify`, `/speckit.plan`): Brainstorming & strategy design (markdown plans only)
+- ✅ **Tasks** (`/speckit.tasks`): Break down into actionable work (JIRA-ready tasks)
+- 🚀 **Implement** (`/speckit.implement`): Execution & artifact creation (actual surveys, templates, scripts)
+
+**Note**: The AI provides execution guidance and tracking, but does not automatically "do" the work (e.g., it won't draft policy documents or schedule workshops). It helps you stay on track, marks progress, and reminds you of upcoming milestones.
 
 For detailed step-by-step instructions, see [Detailed Workflow](#-detailed-workflow) below.
 
@@ -291,6 +334,36 @@ Spec Kit Operations is designed for business operations teams across functions:
 | **Operations** | Process standardization initiatives, Quality improvement programs, Vendor management optimization, Operational excellence projects |
 
 ## 🎯 Key Features
+
+### File Organization & Structure
+
+All initiative files are organized in numbered folders for clarity:
+
+```
+specs/
+├── 1-employee-onboarding/       # First initiative
+│   ├── spec.md                  # Specification with OKRs
+│   ├── plan.md                  # Execution plan
+│   ├── tasks.md                 # JIRA-ready tasks
+│   ├── stakeholder-analysis.md  # Stakeholder mapping
+│   ├── communication-plan.md    # Communication strategy
+│   ├── execution-guide.md       # Detailed execution plan
+│   ├── process-maps.md          # Process designs
+│   ├── training-materials/      # Training outlines & content
+│   ├── checklists/              # Quality checklists
+│   └── deliverables/            # Implementation artifacts (created during /speckit.implement)
+├── 2-quarterly-planning/        # Second initiative
+│   └── ...
+└── 3-customer-retention/        # Third initiative
+    └── ...
+```
+
+**Benefits**:
+- ✅ No more messy project root with scattered files
+- ✅ Each initiative is self-contained and easy to find
+- ✅ Clear separation between brainstorming (spec/plan) and implementation (deliverables)
+- ✅ Easy to archive completed initiatives
+- ✅ Git branches match folder names for clarity
 
 ### OKR Quality Framework
 - **SMART Criteria Validation**: Ensures all Key Results are Specific, Measurable, Achievable, Relevant, Time-bound
@@ -472,12 +545,29 @@ Use `/speckit.plan` to design your execution strategy. Focus on stakeholder enga
 ```
 
 The AI generates:
+The AI generates:
 - `plan.md` - Execution strategy, timeline, resource allocation
 - `stakeholder-analysis.md` - Power/Interest matrix, engagement strategies, readiness assessment
 - `communication-plan.md` - Touchpoints, messages, feedback mechanisms
 - `process-maps.md` - Current state, future state, SOPs (if process redesign)
 - `execution-guide.md` - Phased rollout, quality gates, RACI
-- `training-materials/` - Training needs analysis, curriculum outline
+- `training-materials/` - Training needs analysis, curriculum outlines (NOT actual training content yet)
+
+**Key Principle**: `/speckit.specify` and `/speckit.plan` are **brainstorming phases**. They create plans and designs, not implementation artifacts. Actual implementation files (surveys, scripts, templates) are created during `/speckit.implement`.
+
+### 7. Break Down into Tasks
+
+Use `/speckit.tasks` to create an actionable task list:
+
+```bash
+/speckit.tasks
+```
+
+**What happens**:
+- Generates `specs/1-employee-onboarding/tasks.md` with JIRA-ready tasks
+- Each task includes: title, owner, estimate, description, acceptance criteria, deliverables, dependencies, business value
+- Tasks are organized by business scenario for independent execution
+- Ready to import into JIRA or your project management tool
 
 ### Step 7: Generate Task Breakdown
 

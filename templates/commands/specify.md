@@ -59,7 +59,8 @@ Given that initiative description, do this:
    - If no existing branches/directories found with this short-name, start with number 1
    - You must only ever run this script once per initiative
    - The JSON is provided in the terminal as output - always refer to it to get the actual content you're looking for
-   - The JSON output will contain BRANCH_NAME and SPEC_FILE paths
+   - The JSON output will contain BRANCH_NAME, SPEC_FILE paths, and INITIATIVE_DIR (the folder for all initiative artifacts)
+   - **ALL initiative files MUST be created inside INITIATIVE_DIR** (specs/<number>-<short-name>/)
    - For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot")
 
 3. Load `templates/spec-template.md` to understand required sections.
@@ -89,11 +90,20 @@ Given that initiative description, do this:
     7. Identify Success Validation criteria
     8. Return: SUCCESS (spec ready for stakeholder review)
 
-5. Write the specification to SPEC_FILE using the template structure, replacing placeholders with concrete details derived from the initiative description (arguments) while preserving section order and headings.
+5. **CRITICAL - File Organization**: 
+   - ALL initiative artifacts MUST be created inside INITIATIVE_DIR (specs/<number>-<short-name>/)
+   - Write the specification to SPEC_FILE (already inside INITIATIVE_DIR)
+   - **DO NOT create any implementation artifacts** (no .yaml files, no .py scripts, no .csv files)
+   - This is the **BRAINSTORMING phase** - only create planning documents (spec.md, analysis documents)
+   - Implementation artifacts will be created later during `/speckit.implement` phase
 
-6. **Specification Quality Validation**: After writing the initial spec, validate it against quality criteria:
+6. Write the specification to SPEC_FILE using the template structure, replacing placeholders with concrete details derived from the initiative description (arguments) while preserving section order and headings.
 
-   a. **Create Spec Quality Checklist**: Generate a checklist file at `FEATURE_DIR/checklists/requirements.md` using the checklist template structure with these validation items:
+6. Write the specification to SPEC_FILE using the template structure, replacing placeholders with concrete details derived from the initiative description (arguments) while preserving section order and headings.
+
+7. **Specification Quality Validation**: After writing the initial spec, validate it against quality criteria:
+
+   a. **Create Spec Quality Checklist**: Generate a checklist file at `INITIATIVE_DIR/checklists/requirements.md` using the checklist template structure with these validation items:
 
       ```markdown
       # Specification Quality Checklist: [INITIATIVE NAME]
@@ -192,7 +202,9 @@ Given that initiative description, do this:
 
    d. **Update Checklist**: After each validation iteration, update the checklist file with current pass/fail status
 
-7. Report completion with branch name, spec file path, checklist results, and readiness for the next phase (`/speckit.clarify` or `/speckit.plan`).
+7. Report completion with branch name, spec file path, initiative folder (INITIATIVE_DIR), checklist results, and readiness for the next phase (`/speckit.clarify` or `/speckit.plan`).
+
+**REMINDER**: This is the specification/brainstorming phase. Do NOT create implementation artifacts like .yaml files, .py scripts, .csv templates, etc. Those will be created during `/speckit.implement` phase.
 
 **NOTE:** The script creates and checks out the new branch and initializes the spec file before writing.
 

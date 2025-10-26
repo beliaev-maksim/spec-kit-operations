@@ -49,12 +49,13 @@ fi
 
 # Output results
 if $JSON_MODE; then
-    printf '{"FEATURE_SPEC":"%s","IMPL_PLAN":"%s","SPECS_DIR":"%s","BRANCH":"%s","HAS_GIT":"%s"}\n' \
-        "$FEATURE_SPEC" "$IMPL_PLAN" "$FEATURE_DIR" "$CURRENT_BRANCH" "$HAS_GIT"
+    printf '{"INITIATIVE_SPEC":"%s","EXEC_PLAN":"%s","SPECS_DIR":"%s","INITIATIVE_DIR":"%s","BRANCH":"%s","HAS_GIT":"%s"}\n' \
+        "$FEATURE_SPEC" "$IMPL_PLAN" "$FEATURE_DIR" "$FEATURE_DIR" "$CURRENT_BRANCH" "$HAS_GIT"
 else
-    echo "FEATURE_SPEC: $FEATURE_SPEC"
-    echo "IMPL_PLAN: $IMPL_PLAN" 
+    echo "INITIATIVE_SPEC: $FEATURE_SPEC"
+    echo "EXEC_PLAN: $IMPL_PLAN" 
     echo "SPECS_DIR: $FEATURE_DIR"
+    echo "INITIATIVE_DIR: $FEATURE_DIR"
     echo "BRANCH: $CURRENT_BRANCH"
     echo "HAS_GIT: $HAS_GIT"
 fi

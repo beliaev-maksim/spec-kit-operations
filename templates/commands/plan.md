@@ -3,8 +3,18 @@ description: Execute the initiative planning workflow using the plan template to
 scripts:
   sh: scripts/bash/setup-plan.sh --json
   ps: scripts/powershell/setup-plan.ps1 -Json
-agent_scripts:
-  sh: scripts/bash/update-agent-context.sh __AGENT__
+agent_s      - Resistance Management:
+         - Expected resistance (from stakeholder analysis)
+         - Mitigation strategies for each resistance type
+         - Champions network: Identify and activate early adopters
+         - Executive air cover: When to escalate for leadership support
+   ```
+   
+   **REMINDER**: Create communication plan templates in markdown. Do NOT create actual emails, presentations, or implementation artifacts yet.
+
+3. **Training & Enablement Design**:
+
+   **Generate `INITIATIVE_DIR/training-materials/` directory with**:sh: scripts/bash/update-agent-context.sh __AGENT__
   ps: scripts/powershell/update-agent-context.ps1 -AgentType __AGENT__
 ---
 
@@ -30,20 +40,43 @@ Apply proven consulting frameworks and best practices throughout this planning w
 
 ## Outline
 
-1. **Setup**: Run `{SCRIPT}` from repo root and parse JSON for INITIATIVE_SPEC, EXEC_PLAN, SPECS_DIR, BRANCH. For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot").
+1. **Setup**: Run `{SCRIPT}` from repo root and parse JSON for INITIATIVE_SPEC, EXEC_PLAN, SPECS_DIR, INITIATIVE_DIR, BRANCH. For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot").
 
-2. **Load context**: Read INITIATIVE_SPEC and `/memory/constitution.md`. Load EXEC_PLAN template (already copied).
+2. **Load context**: Read INITIATIVE_SPEC and `/.specify/memory/constitution.md`. Load EXEC_PLAN template (already copied).
 
-3. **Execute planning workflow**: Follow the structure in EXEC_PLAN template to:
+3. **CRITICAL - File Organization**:
+   - ALL planning artifacts MUST be created inside INITIATIVE_DIR (specs/<number>-<short-name>/)
+   - Create subdirectories within INITIATIVE_DIR as needed: stakeholder-analysis/, communication/, process-maps/, training-materials/, etc.
+   - **DO NOT create any implementation artifacts** (no .yaml files, no .py scripts, no .csv files, no executable code)
+   - This is the **PLANNING/BRAINSTORMING phase** - only create planning documents (markdown files, outlines, templates)
+   - Implementation artifacts will be created later during `/speckit.implement` phase
+   - Think of this phase as "designing and documenting the strategy" not "building the solution"
+
+4. **Execute planning workflow**: Follow the structure in EXEC_PLAN template to:
    - Fill Initiative Context (mark unknowns as "NEEDS CLARIFICATION")
    - Fill Constitution Check section from constitution (governance requirements)
    - Evaluate gates (ERROR if violations unjustified or significant risks unmitigated)
-   - Phase 0: Generate stakeholder-analysis.md (resolve all NEEDS CLARIFICATION)
-   - Phase 1: Generate process-maps.md (if relevant), communication-plan.md, execution-guide.md, training-materials/
+   - Phase 0: Generate `INITIATIVE_DIR/stakeholder-analysis.md` (resolve all NEEDS CLARIFICATION)
+   - Phase 1: Generate `INITIATIVE_DIR/process-maps.md` (if relevant), `INITIATIVE_DIR/communication-plan.md`, `INITIATIVE_DIR/execution-guide.md`, `INITIATIVE_DIR/training-materials/` directory
    - Phase 1: Update agent context by running the agent script
    - Re-evaluate Constitution Check post-planning (ensure readiness for execution)
 
-4. **Stop and report**: Command ends after Phase 1 planning complete. Report branch, EXEC_PLAN path, and generated artifacts.
+5. **Stop and report**: Command ends after Phase 1 planning complete. Report branch, EXEC_PLAN path, INITIATIVE_DIR, and generated artifacts (all within INITIATIVE_DIR).
+
+**REMINDER**: This is the planning/brainstorming phase. Do NOT create implementation artifacts. Examples of what NOT to create:
+- ❌ `.yaml` or `.yml` configuration files
+- ❌ `.py`, `.js`, `.sh` scripts
+- ❌ `.csv`, `.xlsx` data templates
+- ❌ SQL queries or database schemas
+- ❌ API endpoint definitions
+- ❌ Executable code of any kind
+
+Examples of what TO create:
+- ✅ Markdown planning documents (.md)
+- ✅ Process flow diagrams (as markdown or ASCII)
+- ✅ Training outlines and curriculum (markdown)
+- ✅ Communication templates (markdown)
+- ✅ Checklists and guidelines (markdown)
 
 ## Phases
 
@@ -123,7 +156,7 @@ Apply proven consulting frameworks and best practices throughout this planning w
      - Critical path: What must happen in sequence
    ```
 
-3. **Generate stakeholder-analysis.md** with comprehensive findings:
+   **Generate `stakeholder-analysis.md`** with comprehensive findings:
    - Executive Summary: Key findings and readiness assessment
    - Stakeholder Map: Power/Interest matrix with engagement strategies
    - Current State Analysis: Documented pain points and baseline metrics
@@ -132,7 +165,9 @@ Apply proven consulting frameworks and best practices throughout this planning w
    - Dependency Map: Critical dependencies visualized or listed
    - Recommendations: Actions needed before Phase 1 planning
 
-**Output**: `stakeholder-analysis.md` with all unknowns from Initiative Context resolved
+**Output**: `INITIATIVE_DIR/stakeholder-analysis.md` with all unknowns from Initiative Context resolved
+
+**REMINDER**: Do NOT create implementation artifacts (yaml files, scripts, etc.). Document the stakeholder analysis strategy in markdown format only.
 
 **Gate Criteria** (must pass to proceed to Phase 1):
 - [ ] All key stakeholders identified and engaged
@@ -151,7 +186,7 @@ Apply proven consulting frameworks and best practices throughout this planning w
 
 1. **Process Design & Mapping** (if initiative involves process changes):
 
-   **Generate `process-maps.md`**:
+   **Generate `INITIATIVE_DIR/process-maps.md`**:
    ```text
    For each business scenario from spec.md:
      A. Current State Process Map:
@@ -181,10 +216,12 @@ Apply proven consulting frameworks and best practices throughout this planning w
 
    **Format**: Use swim lane diagrams, flowcharts, or structured text
    **Validation**: Review with stakeholders from current state analysis
+   
+   **REMINDER**: Document the process design in markdown. Do NOT create implementation scripts or configuration files yet.
 
 2. **Communication & Change Management Planning**:
 
-   **Generate `communication-plan.md`**:
+   **Generate `INITIATIVE_DIR/communication-plan.md`**:
    ```text
    A. Communication Strategy:
       - Key messages: What's changing, why, what's in it for stakeholders
@@ -237,11 +274,15 @@ Apply proven consulting frameworks and best practices throughout this planning w
    
    C. Training Materials:
       training-materials/
-        ├── slides/ (presentation decks)
-        ├── guides/ (step-by-step guides, job aids)
-        ├── videos/ (planned, not created yet)
-        ├── assessments/ (quizzes, checklists)
-        └── resources/ (FAQs, quick reference cards)
+        ├── slides/ (outline for presentation decks - NOT actual slides yet)
+        ├── guides/ (outlines for step-by-step guides and job aids)
+        ├── videos/ (planned topics and scripts - videos created during implement phase)
+        ├── assessments/ (outline for quizzes and checklists)
+        └── resources/ (outline for FAQs and quick reference cards)
+   
+   **CRITICAL**: Create OUTLINES and PLANS for training materials in markdown format.
+   Do NOT create actual slides, videos, or finished training content yet.
+   Think: "training curriculum design" not "training content creation"
    
    D. Training Delivery Plan:
       | Audience | Method | Duration | Schedule | Trainer | Materials |
@@ -260,7 +301,7 @@ Apply proven consulting frameworks and best practices throughout this planning w
 
 4. **Execution Planning**:
 
-   **Generate `execution-guide.md`**:
+   **Generate `INITIATIVE_DIR/execution-guide.md`**:
    ```text
    A. Phased Rollout Strategy:
       - Phase breakdown (aligned with business scenarios from spec.md)
@@ -333,11 +374,17 @@ Apply proven consulting frameworks and best practices throughout this planning w
    - Preserve manual additions between markers
 
 **Output**: 
-- `process-maps.md` (if process changes)
-- `communication-plan.md` (comprehensive communication strategy)
-- `execution-guide.md` (detailed execution plan with measurement framework)
-- `training-materials/` directory (training design and materials outline)
+- `INITIATIVE_DIR/process-maps.md` (if process changes)
+- `INITIATIVE_DIR/communication-plan.md` (comprehensive communication strategy)
+- `INITIATIVE_DIR/execution-guide.md` (detailed execution plan with measurement framework)
+- `INITIATIVE_DIR/training-materials/` directory (training design and materials outlines)
 - Updated agent-specific context file
+
+**FINAL REMINDER**: ALL files created during planning phase should be:
+- ✅ Markdown planning documents (.md files)
+- ✅ Directory structures for organizing plans
+- ✅ Outlines, templates, and designs
+- ❌ NOT implementation artifacts (no yaml, scripts, code, or data files)
 
 **Gate Criteria** (must pass before generating tasks):
 - [ ] Execution plan is realistic and achievable given resources and timeline
