@@ -277,6 +277,7 @@ if ($Json) {
         BRANCH_NAME = $branchName
         SPEC_FILE = $specFile
         FEATURE_NUM = $featureNum
+        INITIATIVE_DIR = $featureDir
         HAS_GIT = $hasGit
     }
     $obj | ConvertTo-Json -Compress
@@ -284,6 +285,7 @@ if ($Json) {
     Write-Output "BRANCH_NAME: $branchName"
     Write-Output "SPEC_FILE: $specFile"
     Write-Output "FEATURE_NUM: $featureNum"
+    Write-Output "INITIATIVE_DIR: $featureDir"
     Write-Output "HAS_GIT: $hasGit"
     Write-Output "SPECIFY_FEATURE environment variable set to: $branchName"
 }
